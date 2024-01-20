@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Box</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background:url(../200w\ \(2\).webp);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .quiz-box {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .quizify{
+            margin-top: 0px;
+            margin-bottom: 30px;
+            color: #000000;
+            font-size:larger;
+        }
+
+        .question {
+            font-size: 25px;
+            margin-bottom: 20px;
+
+        }
+
+        .choices {
+            text-align: left;
+        }
+
+        .choice {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            border: 1.5px solid rgb(4, 4, 101);
+        }
+
+        .choice:hover {
+            background-color: #2980b9;
+        }
+        
+        .green{
+            background-color: rgb(25, 215, 25);
+            border:1.5px solid rgb(28, 100, 28)
+        }
+
+        .next-button {
+            background-color: #000000;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .next-button:hover {
+            background-color: #418aea;
+        }
+        body{
+            background: url(../200w\ \(2\).webp);
+        }
+        .gg{
+            min-height: 200px;
+            align-items: center;
+            background: linear-gradient(135deg skyblue white);
+        }
+        .show_result{
+            border-radius: 2px solid black;
+            border-radius: 5px;
+            padding: 10px 20px;
+            background-color: blue;
+            color: white;
+            text-decoration: none;
+        }
+        .cong{
+            color: #dc3333;
+            font-size: 2em;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .s_result{
+            font-size: 30px;
+            color: black;
+            font-weight: lighter;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let count = 0;
+        let score=0;
+        let catMap = {
+            gk:9,
+            science:17,
+            history:23,
+            maths:19,
+            computer:18,
+            sports:21,
+            tv:29,
+        }
+        let curCat = ""; 
+        let param = new URL(window.location.toLocaleString()).searchParams;
+        console.log(window.location.toLocaleString());
+        let cat = param.get('cat');
+        console.log(cat);
+        if(cat==="" || cat===undefined || cat===null){
+            curCat = catMap["gk"];
+        }
+        else{
+            curCat = catMap[cat];
+        }
+        const showScore = ()=>{
+            let e = document.getElementById("quiz-box");
+            e.className += " gg";
+            e.innerHTML = "<p class='cong'>CONGRATULATIONS !!</p>";
+            e.innerHTML += "<p class='s_result'>Score is "+ score + "/10</p>";
+            e.innerHTML+= "<a href='./content.html' class='show_result'>Return Home</a>";
+        }
+        const setQuestion = (arr,count)=>{
+            let flag = false;
+            document.getElementById("question").innerText = arr[count].question;
+            let asdk = document.getElementById("choice-container");
+            let ht ="";
+            arr[count].choices.forEach((e)=>{ht+= "<button class='choice'>"+e+"</button>"});
+            asdk.innerHTML = ht;
+            let xxx = document.querySelectorAll('.choice');
+            xxx.forEach((e)=>e.addEventListener('click',(event)=>
+            {
+                if(event.target.innerText==arr[count].correct_ans && flag===false){
+                    console.log("correct");
+                    event.target.style.background = "green";    
+                    score++;
+                    flag=true;
+                }
+                else if(flag===false){
+                    flag=true;
+                    event.target.style.background = "red";
+                    console.log("incorrect");
+                }
+            }));
+            if(count==9){
+                document.getElementById('next-btn').innerHTML = 'Finish';
+                showScore();
+            }else{
+                document.getElementById('next-btn').addEventListener('click',()=>{
+                if(flag){
+                    setQuestion(arr,count+1);
+                    console.log("changed");
+                }
+                });
+            }    
+        }        
+        const gg = async ()=>{
+            let gg;
+            const url = `https://opentdb.com/api.php?amount=10&category=${curCat}&difficulty=easy&type=multiple`;
+            console.log(url)
+            await fetch(url)
+            .then((r)=>r.json())
+            .then((rr)=>{
+                gg = rr.results;
+                console.log(gg)});
+            let arr = gg.map((e)=>{let x =  Array.from(e.incorrect_answers);
+                let f = Math.floor(Math.random()*4);
+                 x.splice(f,0,e.correct_answer);
+                 return {question:e.question,choices:x,correct_ans:e.correct_answer};
+                });
+            console.log(arr);
+            setQuestion(arr,count);
+        }
+        gg();
+
+    </script>
+    <div class="quiz-box" id="quiz-box">
+        <strong class="quizify">Quizify!</strong><hr>
+        <br>
+        <div class="question" id="question">
+            Question?
+        </div>
+        <div class="choices" id="choice-container">
+            <button class="choice">A. Choice</button>
+            <button class="choice">B. Choice</button>
+            <button class="choice">C. Choice</button>
+            <button class="choice">D. Choice</button>
+        </div>
+        <hr>
+        <button class="next-button" id="next-btn">Next</button>
+    </div>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    
+    <h1 id="sdaf"></h1>
+    <div id="x">
+    </div>
+    <script>        
+        const gg = async ()=>{
+            let gg;
+            await fetch('https://opentdb.com/api.php?amount=10&category=22&difficulty=easy&type=multiple')
+            .then((r)=>r.json())
+            .then((rr)=>{
+                gg = rr.results;
+                console.log(gg)});
+            let arr = gg.map((e)=>{let x =  Array.from(e.incorrect_answers);
+                let f = Math.floor(Math.random()*4);
+                 x.splice(f,0,e.correct_answer);
+                 return {question:e.question,choices:x,correct_ans:e.correct_answer};
+                });
+            console.log(arr);
+            document.getElementById("sdaf").innerText = arr[0].question;
+            let asdk = document.getElementById("x");
+             let ht ="";
+            arr[0].choices.forEach((e)=>{ht+= "<h3 class='choices'>"+e+"<h3/>"});
+            asdk.innerHTML = ht;
+            let xxx = document.querySelectorAll('.choices');
+            xxx.forEach((e)=>e.addEventListener('click',(event)=>
+            {
+                if(event.target.innerText==arr[0].correct_ans){
+                    console.log("correct");
+                }
+                else{
+                    console.log("incorrect");
+                }
+            }));
+        }
+
+        gg();
+    </script>
+</body>
+</html> -->
